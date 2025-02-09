@@ -121,8 +121,3 @@ Las principales dependencias del proyecto están en `requirements.txt` e incluye
 - Pandas
 
 ---
-
-## 📄 Licencia
-Este proyecto está bajo la licencia MIT.
-
----
