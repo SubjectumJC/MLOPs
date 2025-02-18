@@ -17,12 +17,28 @@ En este repositorio encuentras:
    mkdir models
    mkdir notebooks
 
-## Instalación y Configuración
+La estrcutura del proyecto es la sgt:
 
-Para ejecutar este proyecto en un entorno contenedorizado con Docker, sigue estos pasos:
+G4_2DTALLER_MLOPS/
+├── config/
+│   ├── __init__.py
+│   ├── paths.py
+│   └── requirements.txt
+├── data/
+├── docker/
+│   ├── Dockerfile
+│   └── docker-compose.yml
+├── models/
+├── notebooks/
+└── src/
+    ├── api/
+    │   ├── __init__.py
+    │   └── api.py
+    └── training/
+        ├── __init__.py
+        └── train_penguin_v1.py
+└── README
 
-### 1. Clonar el repositorio
-```bash
-git clone https://github.com/SubjectumJC/MLOPs.git
-cd MLOPs
-
+Para ejecutar: 
+docker-compose build --no-cache
+docker-compose up -d

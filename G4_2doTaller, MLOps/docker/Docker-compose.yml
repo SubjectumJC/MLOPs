@@ -1,0 +1,30 @@
+services:
+  fastapi:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: "penguin_api"
+    volumes:
+      - ..:/app
+    ports:
+      - "8989:8989"
+    environment:
+      - PYTHONPATH=/app
+    restart: unless-stopped
+
+  jupyterlab:
+    image: jupyter/scipy-notebook:latest
+    container_name: "g4_jupyterlab"
+    volumes:
+      - ..:/home/jovyan
+    ports:
+      - "8888:8888"
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+    command: >
+      /bin/bash -c "
+      pip install --no-cache-dir uv &&
+      uv pip install --system --verbose -r /home/jovyan/config/requirements.txt &&
+      start-notebook.sh --NotebookApp.token='' --NotebookApp.password=''
+      "
+    restart: unless-stopped
