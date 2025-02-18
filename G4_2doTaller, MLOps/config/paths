@@ -1,7 +1,12 @@
 from pathlib import Path
+import os
 
-# Ruta base: G4_2DTALLER_MLOPS/
+# Ruta base del proyecto
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Asegurar compatibilidad en Docker (cuando el script se ejecuta desde notebooks)
+if not BASE_DIR.exists():
+    BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # Rutas de datos
 DATA_DIR = BASE_DIR / "data"
@@ -38,3 +43,9 @@ def ensure_dirs():
         directory.mkdir(parents=True, exist_ok=True)
 
 ensure_dirs()
+
+# Imprimir rutas para depuración
+print(f"🔹 BASE_DIR: {BASE_DIR}")
+print(f"🔹 MODELS_DIR: {MODELS_DIR}")
+print(f"🔹 DATA_DIR: {DATA_DIR}")
+print(f"🔹 NOTEBOOKS_DIR: {NOTEBOOKS_DIR}")
