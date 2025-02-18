@@ -1,0 +1,27 @@
+version: "3.9"
+
+services:
+  fastapi:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: "penguin_api"
+    volumes:
+      - ..:/app
+    ports:
+      - "8989:8989"
+    environment:
+      - PYTHONPATH=/app
+    restart: unless-stopped
+
+  jupyterlab:
+    image: jupyter/scipy-notebook:latest
+    container_name: "g4_jupyterlab"
+    volumes:
+      - ..:/home/jovyan
+    ports:
+      - "8888:8888"
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+    command: start-notebook.sh --NotebookApp.token='' --NotebookApp.password=''
+    restart: unless-stopped
