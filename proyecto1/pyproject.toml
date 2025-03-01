@@ -1,0 +1,16 @@
+[project]
+name = "mlops-proyecto1"
+version = "0.1.0"
+description = "Pipeline de MLOps para procesamiento de datos"
+dependencies = [
+    "pandas",
+    "numpy",
+    "scikit-learn",
+    "tensorflow",
+    "tensorflow-metadata",
+    "tensorflow-transform>=1.14.0",  # Usa una versión más reciente
+    "apache-beam[gcp]>=2.48.0",  # Versión más reciente para evitar conflictos con fastavro
+    "ml-metadata",
+    "jupyter",
+    "jupyterlab"
+]
