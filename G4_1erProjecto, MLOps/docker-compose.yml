@@ -1,0 +1,17 @@
+# docker/docker-compose.yml
+version: '3.7'
+
+services:
+  mlops_p1:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: mlops_proyecto1
+    ports:
+      - "8888:8888"
+    volumes:
+      # Monte el directorio local en /app para que los cambios se vean reflejados
+      - ../:/app
+    environment:
+      # Variables de entorno si las necesitas
+      - PYTHONUNBUFFERED=1

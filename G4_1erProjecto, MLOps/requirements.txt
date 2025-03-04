@@ -1,0 +1,14 @@
+jupyter
+ipywidgets
+tfx
+tensorflow
+pandas
+numpy
+matplotlib
+scikit-learn
+requests
+tensorflow-data-validation
+tensorflow-transform
+apache-beam[gcp]
+pyarrow
+ipykernel
