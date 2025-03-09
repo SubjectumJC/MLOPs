@@ -296,6 +296,20 @@ services:
   #    <<: *airflow-common-depends-on
   #    airflow-init:
   #      condition: service_completed_successfully
+  mysql:
+    image: mysql:8.0
+    container_name: my_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root         # Contraseña de root
+      MYSQL_DATABASE: my_database       # Nombre de la BD que quieres crear
+      MYSQL_USER: my_user              # Usuario para esa BD
+      MYSQL_PASSWORD: my_password      # Contraseña de ese usuario
+    ports:
+      - "3306:3306"                    # Mapea el puerto 3306 del contenedor al host
+    volumes:
+      - mysql_data:/var/lib/mysql      # Volumen para persistir datos
+    restart: always
 
 volumes:
   postgres-db-volume:
+  mysql_data:
