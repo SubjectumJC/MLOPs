@@ -4,14 +4,19 @@
 - Docker y Docker Compose instalados
 - Git (opcional)
 
+### 1. Clonar el repositorio
+Si tienes Git instalado, puedes clonar el repositorio usando:
+
+`git clone ---`
+
 ## Pasos de Inicialización
 
-### 1. Crear archivo .env
+### 2. Crear archivo .env
 Primero, crea un archivo `.env` en la raíz del proyecto con el siguiente contenido:
 
 `AIRFLOW_UID=1000`
 
-### 2. Configurar la conexión MySQL en Airflow
+### 3. Configurar la conexión MySQL en Airflow
 
 Para configurar la conexión entre Airflow y MySQL, sigue estos pasos en la interfaz web de Airflow:
 

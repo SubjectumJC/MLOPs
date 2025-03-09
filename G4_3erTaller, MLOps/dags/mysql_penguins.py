@@ -24,8 +24,7 @@ def download_and_store_penguins(**kwargs):
         bill_depth_mm FLOAT,
         flipper_length_mm INT,
         body_mass_g INT,
-        sex VARCHAR(10),
-        year INT
+        sex VARCHAR(10)
     );
     """
     mysql_hook.run(create_table_sql)
