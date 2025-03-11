@@ -23,13 +23,13 @@ Primero, crea un archivo `.env` en la raíz del proyecto con el siguiente conten
 ## Proceso en Airflow
 
 ### 4. Acceso a Airflow
-Estará disponible en `http://127.0.0.1:8080/`. las credenciales de acceso son tanto usuario y contraseña `airflow`.
+Estará disponible en http://localhost:8080. las credenciales de acceso son tanto usuario y contraseña `airflow`.
 
 ### 5. Configurar la conexión MySQL en Airflow
 
 Para configurar la conexión entre Airflow y MySQL, sigue estos pasos en la interfaz web de Airflow:
 
-1. Accede a la interfaz web de Airflow (por defecto en http://localhost:8080)
+1. Accede a la interfaz web de Airflow
 2. Ve a "Admin" -> "Connections" en el menú superior
 3. Haz clic en el botón "+" para agregar una nueva conexión
 4. Configura los siguientes campos:
@@ -75,7 +75,7 @@ curl -X 'POST' \
 }'
 ```
 
-o Accediendo via web a `http://127.0.0.1:8989/docs` y probando con el request body:
+o Accediendo via web a http://127.0.0.1:8989/docs y probando con el request body:
 
 ```
 {
