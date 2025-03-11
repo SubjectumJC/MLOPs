@@ -49,7 +49,8 @@ El orden de ejecución es tal como se ve en la siguiente imagen:
 
 Es posible hacer la inferencia desde terminal ejecutando el siguiente comando:
 
-`curl -X 'POST' \
+```
+curl -X 'POST' \
   'http://127.0.0.1:8989/predict/' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
@@ -63,11 +64,13 @@ Es posible hacer la inferencia desde terminal ejecutando el siguiente comando:
     "body_mass_g": 3750,
     "sex": "Male"
 }
-}'`
+}'
+```
 
 o Accediendo via web a `http://127.0.0.1:8989/docs` y probando con el request body:
 
-`{
+```
+{
   "model_name": "random_forest",
   "data": {
     "island": "Torgersen",
@@ -77,13 +80,16 @@ o Accediendo via web a `http://127.0.0.1:8989/docs` y probando con el request bo
     "body_mass_g": 3750,
     "sex": "Male"
 }
-}`
+}
+```
 
 El resultado esperado es el siguiente:
 
-`{
+```
+{
   "model_used": "random_forest",
   "prediction": [
     "Adelie"
   ]
-}`
+}
+```
