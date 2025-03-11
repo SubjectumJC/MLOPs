@@ -16,10 +16,16 @@ Primero, crea un archivo `.env` en la raíz del proyecto con el siguiente conten
 
 `AIRFLOW_UID=1000`
 
-### 3. Acceso a Airflow
+### 3. Ejecutar en terminal donde se clonó el repositorio
+
+`docker compose up --build`
+
+## Proceso en Airflow
+
+### 4. Acceso a Airflow
 Estará disponible en `http://127.0.0.1:8080/`. las credenciales de acceso son tanto usuario y contraseña `airflow`.
 
-### 4. Configurar la conexión MySQL en Airflow
+### 5. Configurar la conexión MySQL en Airflow
 
 Para configurar la conexión entre Airflow y MySQL, sigue estos pasos en la interfaz web de Airflow:
 
@@ -39,11 +45,13 @@ Para configurar la conexión entre Airflow y MySQL, sigue estos pasos en la inte
 
 Esta configuración permite que los DAGs se conecten correctamente a la base de datos MySQL usando los credenciales definidos en el docker-compose.yml.
 
-### 5. Ejecución de DAGs
+### 6. Ejecución de DAGs
 
 El orden de ejecución es tal como se ve en la siguiente imagen:
 
 ![Orden de ejecución](https://github.com/SubjectumJC/MLOPs/blob/feature/data-pipeline/G4_3erTaller%2C%20MLOps/imgs/DAGs.png)
+
+## Validación del Proceso
 
 ### 6. Test de Inferencia
 
