@@ -79,6 +79,7 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
+    - ${AIRFLOW_PROJ_DIR:-.}/models:/opt/airflow/models 
   user: "${AIRFLOW_UID:-1000}:0"
   depends_on:
     &airflow-common-depends-on
@@ -310,6 +311,24 @@ services:
       - mysql_data:/var/lib/mysql      # Volumen para persistir datos
     restart: always
 
+  inference_api:  # Nombre del servicio
+    build:
+      context: .  # Usa el directorio actual como contexto de construcción
+      dockerfile: Dockerfile_api  # Especifica el nombre del Dockerfile
+
+    ports:
+      - "8989:8989"  # Mapea el puerto 8989 del host al 8989 del contenedor
+
+    volumes:
+      - ./app:/app  # Monta el directorio local ./app dentro del contenedor
+      - ./models:/app/models
+
+    restart: always  # Asegura que el contenedor se reinicie en caso de fallo
+
+    command: uvicorn api:app --host 0.0.0.0 --port 8989 --reload
+
 volumes:
   postgres-db-volume:
   mysql_data:
+  #models:
+  #app:
