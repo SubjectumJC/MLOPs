@@ -1,0 +1,26 @@
+[Unit]
+Description=MLflow tracking server
+After=network.target
+
+[Service]
+User=estudiante
+Restart=on-failure
+RestartSec=3
+
+# Ajusta la ruta a tu archivo paths.env
+EnvironmentFile=/home/estudiante/G4_4toTaller_MLOPs/paths.env
+
+WorkingDirectory=/home/estudiante/G4_4toTaller_MLOPs/mlflow
+
+# Creamos la variable de entorno de MLflow con MinIO
+Environment="MLFLOW_S3_ENDPOINT_URL=http://${MINIO_HOST}:${MINIO_PORT}"
+
+ExecStart=/usr/bin/python3 -m mlflow server \
+    --backend-store-uri postgresql://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME} \
+    --default-artifact-root s3://${MINIO_BUCKET}/artifacts \
+    --host 0.0.0.0 \
+    --port ${MLFLOW_PORT} \
+    --serve-artifacts
+
+[Install]
+WantedBy=multi-user.target

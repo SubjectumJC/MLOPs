@@ -1,0 +1,8 @@
+jupyterlab
+mlflow
+boto3
+awscli
+scikit-learn
+pandas
+numpy
+psycopg2-binary
