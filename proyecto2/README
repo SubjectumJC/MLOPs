@@ -1,0 +1,38 @@
+La estructura del directorio es la sgt.:
+
+proyecto2/
+│
+├── README.md                        <- Explicación general del proyecto, cómo correrlo, etc.
+├── docker-compose.yml              <- Archivo principal para levantar todos los servicios
+├── .env                            <- Variables de entorno (puertos, claves, rutas, etc.)
+│
+├── airflow/                        <- DAGs y configuración de Airflow
+│   ├── dags/
+│   │   └── ingest_and_train.py     <- DAG para ingesta de datos y entrenamiento
+│   └── Dockerfile                  <- Imagen personalizada de Airflow (opcional)
+│
+├── mlflow/                         <- Configuración para MLflow
+│   ├── models/                     <- Carpeta donde se almacenarán modelos
+│   ├── mlruns/                     <- Registro local de experimentos (si no se usa Minio)
+│   └── Dockerfile                  <- Imagen opcional para MLflow (puede usar la oficial)
+│
+├── minio/                          <- Configuración de MinIO
+│   └── data/                       <- Datos persistentes (usado como volumen)
+│
+├── mysql/                          <- Configuración para la base de datos
+│   └── data/                       <- Persistencia de datos de MySQL
+│
+├── inference_api/                 <- Código para la API de inferencia (FastAPI)
+│   ├── main.py                     <- Endpoints de inferencia
+│   └── requirements.txt            <- Dependencias de la API
+│
+├── interface/                     <- Interfaz gráfica (Streamlit o Gradio)
+│   ├── app.py                      <- Código de la interfaz
+│   └── requirements.txt            <- Dependencias necesarias
+│
+├── utils/                         <- Utilidades comunes (procesamiento, métricas, etc.)
+│   └── data_utils.py               <- Funciones para tratar datos crudos
+│
+└── data/                          <- Carpeta auxiliar para pruebas locales
+    ├── raw/                        <- Datos crudos descargados de la API
+    └── processed/                  <- Datos transformados listos para entrenar
