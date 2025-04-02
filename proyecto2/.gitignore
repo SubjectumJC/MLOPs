@@ -1,0 +1,43 @@
+ # Archivos y carpetas específicas que NO deben subirse
+
+# Archivos generados
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv
+env/
+venv/
+
+# Ignorar carpetas de datos generadas por contenedores
+minio/data/*
+sql/data/*
+
+# Excluir todo dentro de minio y sql excepto la carpeta data vacía
+!minio/data/.gitkeep
+!sql/data/.gitkeep
+
+# Otros archivos comunes que no deben subirse
+*.sqlite
+*.db
+*.log
+*.bak
+*.tmp
+*.swp
+
+# Ignorar archivos Docker y volúmenes temporales
+docker-compose.override.yml
+*.tar
+*.tar.gz
+
+# Archivos generados por Airflow y MLFlow
+logs/
+mlruns/
+.airflowignore
+
+# Ignorar archivos dentro de mysql/data, incluyendo el socket
+mysql/data/
+!mysql/data/.gitkeep
+
+

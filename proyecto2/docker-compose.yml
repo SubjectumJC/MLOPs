@@ -1,0 +1,126 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    ports:
+      - "${MYSQL_PORT}:3306"
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+    networks:
+      - mlops_net
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ACCESS_KEY}
+      - MINIO_ROOT_PASSWORD=${MINIO_SECRET_KEY}
+    command: server /data --console-address ":9001"
+    ports:
+      - "${MINIO_PORT}:9000"
+      - "9001:9001"
+    volumes:
+      - ./minio/data:/data
+    networks:
+      - mlops_net
+
+  mlflow:
+    image: python:3.9-slim
+    container_name: mlflow
+    depends_on:
+      - mysql
+      - minio
+    environment:
+      - MLFLOW_TRACKING_URI=mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql/${MYSQL_DATABASE}
+      - AWS_ACCESS_KEY_ID=${MINIO_ACCESS_KEY}
+      - AWS_SECRET_ACCESS_KEY=${MINIO_SECRET_KEY}
+      - MLFLOW_S3_ENDPOINT_URL=http://minio:${MINIO_PORT}
+    working_dir: /app
+    command: >
+      sh -c "pip install --no-cache-dir mlflow pymysql boto3 &&
+             mlflow server
+               --backend-store-uri ${MLFLOW_TRACKING_URI}
+               --default-artifact-root s3://mlflow
+               --host 0.0.0.0
+               --port ${MLFLOW_PORT}"
+    ports:
+      - "${MLFLOW_PORT}:${MLFLOW_PORT}"
+    networks:
+      - mlops_net
+
+  airflow:
+    container_name: airflow
+    build:
+      context: ./airflow
+      dockerfile: Dockerfile
+    depends_on:
+      - mysql
+      - minio
+      - mlflow
+
+    entrypoint: ""
+
+    environment:
+      - PYTHONPATH=/opt/airflow
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql/${MYSQL_DATABASE}
+      - AIRFLOW__CORE__FERNET_KEY=${AIRFLOW__CORE__FERNET_KEY}
+      - _AIRFLOW_WWW_USER_USERNAME=${AIRFLOW_USER}
+      - _AIRFLOW_WWW_USER_PASSWORD=${AIRFLOW_PASSWORD}
+
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./utils:/opt/airflow/utils 
+
+    command: >
+      bash -c "airflow db init && \
+      airflow users create --username admin --password admin --firstname Admin --lastname Admin --role Admin --email admin@example.com && \
+      airflow webserver --port 8080 & \
+      airflow scheduler"
+
+    ports:
+      - "8080:8080"
+    networks:
+      - mlops_net
+
+  inference_api:
+    build:
+      context: ./inference_api
+      dockerfile: Dockerfile
+    container_name: inference_api
+    depends_on:
+      - mlflow
+    environment:
+      - MLFLOW_S3_ENDPOINT_URL=http://minio:${MINIO_PORT}
+      - AWS_ACCESS_KEY_ID=${MINIO_ACCESS_KEY}
+      - AWS_SECRET_ACCESS_KEY=${MINIO_SECRET_KEY}
+      - MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI}
+      - FASTAPI_PORT=${FASTAPI_PORT}
+    ports:
+      - "${FASTAPI_PORT}:8000"
+    networks:
+      - mlops_net
+
+  interface:
+    build:
+      context: ./interface
+      dockerfile: Dockerfile
+    container_name: interface
+    depends_on:
+      - inference_api
+    environment:
+      - FASTAPI_URL=http://inference_api:8000
+      - STREAMLIT_PORT=${STREAMLIT_PORT}
+    ports:
+      - "${STREAMLIT_PORT}:8503"
+    networks:
+      - mlops_net
+
+networks:
+  mlops_net:
+    driver: bridge
