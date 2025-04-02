@@ -10,6 +10,8 @@ proyecto2/
 ├── airflow/
 │   └── dags/
 │       └── ingest_and_train.py
+│    └──Dockerfile
+│    └──requirements.txt
 ├── interface/
 │   ├── Dockerfile
 │   └── app.py
@@ -30,6 +32,7 @@ proyecto2/
 ├── .env
 ├── docker-compose.yml
 └── README.md
+└── gitinore
 ```
 
 ## Tecnologías utilizadas
