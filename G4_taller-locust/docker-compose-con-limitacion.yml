@@ -1,0 +1,65 @@
+services:
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:latest
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    command: >
+      mlflow server 
+      --backend-store-uri sqlite:///mlflow.db 
+      --default-artifact-root /mlflow/artifacts 
+      --host 0.0.0.0
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mlruns:/mlflow/artifacts
+      - ./mlflow.db:/mlflow/mlflow.db
+    networks:
+      - mlops
+
+  api:
+    image: msaintarmand/fastapi-inferencia:latest
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    depends_on:
+      - mlflow
+    networks:
+      - mlops
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 128M
+    command: >
+      bash -c "python train_penguin.py && uvicorn main:app --host 0.0.0.0 --port 8000"
+    # ❌ No exponer puerto para evitar conflicto al escalar
+
+  # ✅ Una sola instancia expuesta al host si quieres acceder desde Postman o navegador
+  api_exposed:
+    image: msaintarmand/fastapi-inferencia:latest
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    depends_on:
+      - mlflow
+    networks:
+      - mlops
+    ports:
+      - "8000:8000"
+    command: >
+      bash -c "python train_penguin.py && uvicorn main:app --host 0.0.0.0 --port 8000"
+
+  locust:
+    image: locustio/locust
+    ports:
+      - "8089:8089"
+    volumes:
+      - ./locustfile.py:/mnt/locust/locustfile.py
+    working_dir: /mnt/locust
+    networks:
+      - mlops
+    depends_on:
+      - api
+    command: >
+      -f locustfile.py --host http://api:8000
+
+networks:
+  mlops:
