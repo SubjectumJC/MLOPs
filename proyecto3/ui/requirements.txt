@@ -1,0 +1,5 @@
+streamlit
+requests                   # llamada al API de inferencia
+pandas
+scikit-learn               # opcional si haces post‑proc
+python-dotenv
