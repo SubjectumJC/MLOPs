@@ -1,127 +1,192 @@
-############################################################
-#  MLOps Proyecto 3 – STACK COMPLETO                        #
-#  (Docker Compose v2 – sin clave “version:”)               #
-############################################################
+# docker-compose.yml  –  Proyecto MLOps – Pontificia U. Javeriana
+# ---------------------------------------------------------------
+# ▸ mkdir -p infra dags data        (directorios que se montan)
+# ▸ infra/init-airflow.sql contiene CREATE ROLE/DB para Airflow.
 
 services:
-  # ---------------- Bases de datos & bucket ----------------
+  # ------------------------------------------------------------ #
+  # 🔵 POSTGRES – metadata de Airflow + MLflow                    #
+  # ------------------------------------------------------------ #
   postgres:
     image: postgres:16
+    container_name: proyecto3-postgres
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: mlflow           # BD para MLflow
+      POSTGRES_USER: mlflow          # también dueño de la BD airflow
+      POSTGRES_PASSWORD: mlflow
+      POSTGRES_DB: mlflow
     volumes:
       - pgdata:/var/lib/postgresql/data
-      # Script que crea usuario + DB ‘airflow’ la PRIMERA vez
-      - ./infra/init-airflow.sql:/docker-entrypoint-initdb.d/init-airflow.sql
-    ports:
-      - "5432:5432"
+      - ./infra/init-airflow.sql:/docker-entrypoint-initdb.d/init-airflow.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mlflow"]
+      interval: 5s
+      retries: 10
+    restart: unless-stopped
 
+  # ------------------------------------------------------------ #
+  # 🟣 MINIO – almacén de artefactos S3 compatible                #
+  # ------------------------------------------------------------ #
   minio:
     image: minio/minio:latest
+    container_name: proyecto3-minio
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: minio
       MINIO_ROOT_PASSWORD: minio123
     volumes:
       - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 30s
+      retries: 3
     ports:
       - "9000:9000"
       - "9001:9001"
+    restart: unless-stopped
 
-  # ---------------- MLflow Tracking & Model Registry -------
+  # ------------------------------------------------------------ #
+  # 🟠 MLFLOW – tracking + model registry ↓ artefactos a S3       #
+  # ------------------------------------------------------------ #
   mlflow:
     image: ghcr.io/mlflow/mlflow:v2.12.2
+    container_name: proyecto3-mlflow
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_started
     environment:
-      BACKEND_STORE_URI: postgresql+psycopg2://postgres:postgres@postgres:5432/mlflow
-      ARTIFACT_ROOT: s3://mlops-artifacts/
       MLFLOW_S3_ENDPOINT_URL: http://minio:9000
       AWS_ACCESS_KEY_ID: minio
       AWS_SECRET_ACCESS_KEY: minio123
-    depends_on: [postgres, minio]
+      BACKEND_STORE_URI: postgresql+psycopg2://mlflow:mlflow@postgres:5432/mlflow
+      ARTIFACT_ROOT: s3://mlops-artifacts/
     command: >
-      bash -c "mlflow server \
-        --backend-store-uri=$${BACKEND_STORE_URI} \
-        --default-artifact-root=$${ARTIFACT_ROOT} \
-        --host 0.0.0.0"
+      mlflow server
+      --backend-store-uri=${BACKEND_STORE_URI}
+      --default-artifact-root=${ARTIFACT_ROOT}
+      --host 0.0.0.0
     ports:
       - "5000:5000"
+    restart: unless-stopped
 
-  # ---------------- Airflow (scheduler + webserver) --------
+  # ------------------------------------------------------------ #
+  # 🟡 AIRFLOW – orquestación de DAGs                             #
+  # ------------------------------------------------------------ #
   airflow:
     image: apache/airflow:2.9.1
+    container_name: proyecto3-airflow
+    depends_on:
+      postgres:
+        condition: service_healthy
     environment:
-      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      _AIRFLOW_WWW_USER_USERNAME: admin
+      _AIRFLOW_WWW_USER_PASSWORD: admin
+      # bibliotecas extra necesarias dentro del contenedor
       _PIP_ADDITIONAL_REQUIREMENTS: >
         mlflow psycopg2-binary pandas scikit-learn boto3 sqlalchemy requests
-    depends_on: [postgres]
     volumes:
       - ./dags:/opt/airflow/dags
-      - data_volume:/data
+      - ./data:/opt/airflow/data
+      - data_volume:/opt/airflow/output
     command: >
       bash -c "
-        airflow db init &&
-        airflow users create --username admin --password admin --firstname admin --lastname admin --role Admin --email admin@example.com &&
-        airflow scheduler & exec airflow webserver
-      "
+      airflow db migrate &&
+      airflow users create --username $${_AIRFLOW_WWW_USER_USERNAME} --password $${_AIRFLOW_WWW_USER_PASSWORD} --firstname admin --lastname admin --role Admin --email admin@example.com &&
+      airflow scheduler &
+      exec airflow webserver"
     ports:
       - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 20s
+      retries: 6
+    restart: unless-stopped
 
-  # ---------------- Worker de entrenamiento ----------------
-  training-worker:
-    build: ./training
-    environment:
-      MLFLOW_TRACKING_URI: http://mlflow:5000
-      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
-      AWS_ACCESS_KEY_ID: minio
-      AWS_SECRET_ACCESS_KEY: minio123
-    volumes:
-      - data_volume:/data
-    depends_on: [mlflow]
-
-  # ---------------- API FastAPI (inferencia) ---------------
+  # ------------------------------------------------------------ #
+  # 🔴 FASTAPI – API de inferencia                                #
+  # ------------------------------------------------------------ #
   api:
-    build: ./api
+    build:
+      context: ./api
+    container_name: proyecto3-api
+    depends_on:
+      mlflow:
+        condition: service_started
     environment:
       MLFLOW_TRACKING_URI: http://mlflow:5000
-      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
-      AWS_ACCESS_KEY_ID: minio
-      AWS_SECRET_ACCESS_KEY: minio123
-    depends_on: [mlflow]
     ports:
       - "8000:8000"
+    restart: unless-stopped
 
-  # ---------------- UI Streamlit ---------------------------
+  # ------------------------------------------------------------ #
+  # 🟢 STREAMLIT – interfaz de usuario                            #
+  # ------------------------------------------------------------ #
   streamlit:
-    build: ./streamlit_app
+    build:
+      context: ./streamlit
+    container_name: proyecto3-streamlit
+    depends_on:
+      api:
+        condition: service_started
     environment:
       API_URL: http://api:8000
-    depends_on: [api]
     ports:
       - "8501:8501"
+    restart: unless-stopped
 
-  # ---------------- Observabilidad -------------------------
+  # ------------------------------------------------------------ #
+  # ⚙️  WORKER – entrena modelos y sube a MLflow (vía DAG o cron)  #
+  # ------------------------------------------------------------ #
+  training-worker:
+    build:
+      context: ./training
+    container_name: proyecto3-training-worker
+    depends_on:
+      mlflow:
+        condition: service_started
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      AWS_ACCESS_KEY_ID: minio
+      AWS_SECRET_ACCESS_KEY: minio123
+    restart: "no"     # corre, publica y termina; cambia a unless-stopped si lo necesitas periódico
+
+  # ------------------------------------------------------------ #
+  # 📈 PROMETHEUS – recoge métricas                               #
+  # ------------------------------------------------------------ #
   prometheus:
     image: prom/prometheus:v2.52.0
+    container_name: proyecto3-prometheus
     volumes:
-      - ./infra/prometheus.yml:/etc/prometheus/prometheus.yml
-    depends_on: [api]
+      - ./infra/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     ports:
       - "9090:9090"
+    restart: unless-stopped
 
+  # ------------------------------------------------------------ #
+  # 📊 GRAFANA – dashboards                                       #
+  # ------------------------------------------------------------ #
   grafana:
     image: grafana/grafana:10.4.2
+    container_name: proyecto3-grafana
+    depends_on:
+      prometheus:
+        condition: service_started
     environment:
       GF_SECURITY_ADMIN_PASSWORD: admin
     volumes:
       - grafana_data:/var/lib/grafana
-    depends_on: [prometheus]
     ports:
       - "3000:3000"
+    restart: unless-stopped
 
-# ---------------- Volúmenes persistentes ------------------
+# -------------------------------------------------------------- #
+# Volúmenes declarados                                           #
+# -------------------------------------------------------------- #
 volumes:
   pgdata:
   minio_data:
