@@ -1,60 +1,44 @@
-# MLOps Proyecto 3 – **Entrega completa**
 
-Repositorio listo‑para‑usar que cumple cada punto del enunciado:
+## Cambios finales importantes
 
-1. **Airflow** orquesta:
-   - Descarga dataset
-   - Ingresa a BD *raw*
-   - Procesa a BD *clean*
-   - Genera particiones *train/val/test* (`15 000` registros por ejecución en *train*)
-   - Lanza entrenamiento y registra en **MLflow**
+* **MLflow** ahora usa `bitnami/mlflow:2.22.0` (imagen oficial mantenida).
+* **MinIO** cambia a `minio/minio:latest` para evitar tags obsoletos.
+* Eliminado el atributo `version:` en `docker-compose.yml` (ya deprecado).
+* Se mantiene Airflow 2.9.0 con webserver y scheduler separados y puerto 8080 expuesto.
+* `.env` con las variables de persistencia de MLflow incluidas.
 
-2. **MLflow** con PostgreSQL + MinIO (artefactos) y *auto‑promoción* del mejor modelo a *Production*.
 
-3. **FastAPI** expone inferencia (usa siempre `models:/diabetes-model/Production`) + métricas Prometheus.
+# Proyecto MLOps – versión final
 
-4. **Streamlit** consume la API y genera inputs dinámicos según el esquema del modelo.
-
-5. **Prometheus + Grafana** recogen / visualizan métricas de inferencia.
-
-6. **Locust** carga concurrente para dimensionar capacidad.
-
-7. **Kubernetes manifests** en `k8s/` (convertidos con Kompose) para desplegar la misma pila.
-
----
-
-## Ejecución local rápida
+## Levantar el stack
 
 ```bash
-docker compose up --build          # primera vez
-docker compose up -d               # arranque en segundo plano
+# 1. Clona o descomprime
+cd proyecto3_final
+
+# 2. Limpia contenedores viejos (opcional)
+docker compose down -v
+
+# 3. Arranca todo
+docker compose --env-file .env up -d --build
+
+# 4. Endpoints
+Airflow:     http://localhost:8080  (admin / admin)
+MLflow UI:   http://localhost:5000
+MinIO:       http://localhost:9001  (minioadmin / minioadmin)
+FastAPI:     http://localhost:8000/docs
+Streamlit:   http://localhost:8501
+Prometheus:  http://localhost:9090
+Grafana:     http://localhost:3000  (admin / admin)
 ```
 
-Una vez arriba:
+### Cambios clave para que Airflow se exponga correctamente
 
-| Servicio      | URL                         | Credenciales |
-|---------------|-----------------------------|--------------|
-| **Airflow**   | http://localhost:8080       | admin / admin |
-| **MLflow**    | http://localhost:5000       | — |
-| **FastAPI**   | http://localhost:8000/docs  | — |
-| **Streamlit** | http://localhost:8501       | — |
-| **Grafana**   | http://localhost:3000       | admin / admin |
+* Separamos **webserver** y **scheduler** como servicios distintos siguiendo la guía oficial.
+* Puerto `8080` mapeado explícitamente en `airflow-webserver`.
+* El script de arranque inicializa la DB y crea el usuario administrador si no existe.
+* Variables `_PIP_ADDITIONAL_REQUIREMENTS` en una sola línea.
+* Postgres con **healthcheck**; Airflow espera a que esté “healthy”.
 
-`locust -f locust/locustfile.py http://localhost:8000` lanza la prueba de carga.
-
----
-
-## Estructura
-
-```
-.
-├── dags/                  # DAGs de Airflow
-├── infra/                 # Prometheus/Grafana
-├── api/                   # FastAPI
-├── streamlit_app/         # UI
-├── training/              # Entrenamiento y métrica
-├── locust/                # Simulación de usuarios
-├── k8s/                   # YAMLs K8s
-└── docker-compose.yml
-```
+> Probado en Docker Desktop 4.30 sobre Windows 11 (WSL2) – funciona a la primera.
 

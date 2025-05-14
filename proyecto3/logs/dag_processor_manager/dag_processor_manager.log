@@ -1,0 +1,54 @@
+[2025-05-14T02:53:01.966+0000] {manager.py:470} INFO - Processing files using up to 2 processes at a time 
+[2025-05-14T02:53:01.967+0000] {manager.py:471} INFO - Process each file at most once every 30 seconds
+[2025-05-14T02:53:01.968+0000] {manager.py:472} INFO - Checking for new files in /opt/airflow/dags every 300 seconds
+[2025-05-14T02:53:01.969+0000] {manager.py:737} INFO - Searching for files in /opt/airflow/dags
+[2025-05-14T02:53:02.024+0000] {manager.py:740} INFO - There are 1 files in /opt/airflow/dags
+[2025-05-14T02:53:02.350+0000] {manager.py:878} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                           PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+--------------------------------  -----  ---------  --------  ----------  --------------  ----------
+/opt/airflow/dags/ml_pipeline.py    218  0.25s             0           0
+================================================================================
+[2025-05-14T02:53:32.416+0000] {manager.py:878} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                         PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+--------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/ml_pipeline.py                           1           0  3.20s           2025-05-14T02:53:05
+================================================================================
+[2025-05-14T02:54:02.574+0000] {manager.py:878} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                         PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+--------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/ml_pipeline.py                           1           0  1.53s           2025-05-14T02:53:36
+================================================================================
+[2025-05-14T02:54:33.243+0000] {manager.py:878} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                         PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+--------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/ml_pipeline.py                           1           0  1.22s           2025-05-14T02:54:08
+================================================================================
+[2025-05-14T02:55:03.594+0000] {manager.py:878} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                         PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+--------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/ml_pipeline.py                           1           0  1.19s           2025-05-14T02:54:39
+================================================================================
+[2025-05-14T02:55:33.911+0000] {manager.py:878} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                         PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+--------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/ml_pipeline.py                           1           0  1.18s           2025-05-14T02:55:10
+================================================================================
+[2025-05-14T02:55:56.409+0000] {manager.py:452} INFO - Exiting gracefully upon receiving signal 15

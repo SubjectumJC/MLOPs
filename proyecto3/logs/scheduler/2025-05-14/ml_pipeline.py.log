@@ -1,0 +1,46 @@
+[2025-05-14T02:53:02.131+0000] {processor.py:161} INFO - Started process (PID=218) to work on /opt/airflow/dags/ml_pipeline.py
+[2025-05-14T02:53:02.133+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/ml_pipeline.py for tasks to queue
+[2025-05-14T02:53:02.135+0000] {logging_mixin.py:188} INFO - [2025-05-14T02:53:02.134+0000] {dagbag.py:540} INFO - Filling up the DagBag from /opt/airflow/dags/ml_pipeline.py
+[2025-05-14T02:53:04.896+0000] {processor.py:840} INFO - DAG(s) 'diabetes_end_to_end' retrieved from /opt/airflow/dags/ml_pipeline.py
+[2025-05-14T02:53:05.190+0000] {logging_mixin.py:188} INFO - [2025-05-14T02:53:05.188+0000] {override.py:1829} INFO - Created Permission View: can edit on DAG:diabetes_end_to_end
+[2025-05-14T02:53:05.203+0000] {logging_mixin.py:188} INFO - [2025-05-14T02:53:05.203+0000] {override.py:1829} INFO - Created Permission View: can read on DAG:diabetes_end_to_end
+[2025-05-14T02:53:05.213+0000] {logging_mixin.py:188} INFO - [2025-05-14T02:53:05.213+0000] {override.py:1829} INFO - Created Permission View: can delete on DAG:diabetes_end_to_end
+[2025-05-14T02:53:05.214+0000] {logging_mixin.py:188} INFO - [2025-05-14T02:53:05.214+0000] {dag.py:3096} INFO - Sync 1 DAGs
+[2025-05-14T02:53:05.227+0000] {logging_mixin.py:188} INFO - [2025-05-14T02:53:05.226+0000] {dag.py:3118} INFO - Creating ORM DAG for diabetes_end_to_end
+[2025-05-14T02:53:05.241+0000] {logging_mixin.py:188} INFO - [2025-05-14T02:53:05.240+0000] {dag.py:3954} INFO - Setting next_dagrun for diabetes_end_to_end to 2025-05-13 00:00:00+00:00, run_after=2025-05-14 00:00:00+00:00
+[2025-05-14T02:53:05.266+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/ml_pipeline.py took 3.143 seconds
+[2025-05-14T02:53:35.464+0000] {processor.py:161} INFO - Started process (PID=258) to work on /opt/airflow/dags/ml_pipeline.py
+[2025-05-14T02:53:35.465+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/ml_pipeline.py for tasks to queue
+[2025-05-14T02:53:35.467+0000] {logging_mixin.py:188} INFO - [2025-05-14T02:53:35.467+0000] {dagbag.py:540} INFO - Filling up the DagBag from /opt/airflow/dags/ml_pipeline.py
+[2025-05-14T02:53:36.859+0000] {processor.py:840} INFO - DAG(s) 'diabetes_end_to_end' retrieved from /opt/airflow/dags/ml_pipeline.py
+[2025-05-14T02:53:36.889+0000] {logging_mixin.py:188} INFO - [2025-05-14T02:53:36.888+0000] {dag.py:3096} INFO - Sync 1 DAGs
+[2025-05-14T02:53:36.910+0000] {logging_mixin.py:188} INFO - [2025-05-14T02:53:36.909+0000] {dag.py:3954} INFO - Setting next_dagrun for diabetes_end_to_end to 2025-05-14 00:00:00+00:00, run_after=2025-05-15 00:00:00+00:00
+[2025-05-14T02:53:36.932+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/ml_pipeline.py took 1.476 seconds
+[2025-05-14T02:54:07.139+0000] {processor.py:161} INFO - Started process (PID=279) to work on /opt/airflow/dags/ml_pipeline.py
+[2025-05-14T02:54:07.140+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/ml_pipeline.py for tasks to queue
+[2025-05-14T02:54:07.143+0000] {logging_mixin.py:188} INFO - [2025-05-14T02:54:07.142+0000] {dagbag.py:540} INFO - Filling up the DagBag from /opt/airflow/dags/ml_pipeline.py
+[2025-05-14T02:54:08.235+0000] {processor.py:840} INFO - DAG(s) 'diabetes_end_to_end' retrieved from /opt/airflow/dags/ml_pipeline.py
+[2025-05-14T02:54:08.266+0000] {logging_mixin.py:188} INFO - [2025-05-14T02:54:08.265+0000] {dag.py:3096} INFO - Sync 1 DAGs
+[2025-05-14T02:54:08.287+0000] {logging_mixin.py:188} INFO - [2025-05-14T02:54:08.287+0000] {dag.py:3954} INFO - Setting next_dagrun for diabetes_end_to_end to 2025-05-14 00:00:00+00:00, run_after=2025-05-15 00:00:00+00:00
+[2025-05-14T02:54:08.310+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/ml_pipeline.py took 1.178 seconds
+[2025-05-14T02:54:38.492+0000] {processor.py:161} INFO - Started process (PID=300) to work on /opt/airflow/dags/ml_pipeline.py
+[2025-05-14T02:54:38.493+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/ml_pipeline.py for tasks to queue
+[2025-05-14T02:54:38.496+0000] {logging_mixin.py:188} INFO - [2025-05-14T02:54:38.495+0000] {dagbag.py:540} INFO - Filling up the DagBag from /opt/airflow/dags/ml_pipeline.py
+[2025-05-14T02:54:39.554+0000] {processor.py:840} INFO - DAG(s) 'diabetes_end_to_end' retrieved from /opt/airflow/dags/ml_pipeline.py
+[2025-05-14T02:54:39.580+0000] {logging_mixin.py:188} INFO - [2025-05-14T02:54:39.579+0000] {dag.py:3096} INFO - Sync 1 DAGs
+[2025-05-14T02:54:39.604+0000] {logging_mixin.py:188} INFO - [2025-05-14T02:54:39.604+0000] {dag.py:3954} INFO - Setting next_dagrun for diabetes_end_to_end to 2025-05-14 00:00:00+00:00, run_after=2025-05-15 00:00:00+00:00
+[2025-05-14T02:54:39.628+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/ml_pipeline.py took 1.144 seconds
+[2025-05-14T02:55:09.811+0000] {processor.py:161} INFO - Started process (PID=339) to work on /opt/airflow/dags/ml_pipeline.py
+[2025-05-14T02:55:09.812+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/ml_pipeline.py for tasks to queue
+[2025-05-14T02:55:09.814+0000] {logging_mixin.py:188} INFO - [2025-05-14T02:55:09.814+0000] {dagbag.py:540} INFO - Filling up the DagBag from /opt/airflow/dags/ml_pipeline.py
+[2025-05-14T02:55:10.867+0000] {processor.py:840} INFO - DAG(s) 'diabetes_end_to_end' retrieved from /opt/airflow/dags/ml_pipeline.py
+[2025-05-14T02:55:10.896+0000] {logging_mixin.py:188} INFO - [2025-05-14T02:55:10.895+0000] {dag.py:3096} INFO - Sync 1 DAGs
+[2025-05-14T02:55:10.917+0000] {logging_mixin.py:188} INFO - [2025-05-14T02:55:10.917+0000] {dag.py:3954} INFO - Setting next_dagrun for diabetes_end_to_end to 2025-05-14 00:00:00+00:00, run_after=2025-05-15 00:00:00+00:00
+[2025-05-14T02:55:10.938+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/ml_pipeline.py took 1.133 seconds
+[2025-05-14T02:55:41.124+0000] {processor.py:161} INFO - Started process (PID=360) to work on /opt/airflow/dags/ml_pipeline.py
+[2025-05-14T02:55:41.126+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/ml_pipeline.py for tasks to queue
+[2025-05-14T02:55:41.128+0000] {logging_mixin.py:188} INFO - [2025-05-14T02:55:41.127+0000] {dagbag.py:540} INFO - Filling up the DagBag from /opt/airflow/dags/ml_pipeline.py
+[2025-05-14T02:55:42.190+0000] {processor.py:840} INFO - DAG(s) 'diabetes_end_to_end' retrieved from /opt/airflow/dags/ml_pipeline.py
+[2025-05-14T02:55:42.219+0000] {logging_mixin.py:188} INFO - [2025-05-14T02:55:42.219+0000] {dag.py:3096} INFO - Sync 1 DAGs
+[2025-05-14T02:55:42.244+0000] {logging_mixin.py:188} INFO - [2025-05-14T02:55:42.243+0000] {dag.py:3954} INFO - Setting next_dagrun for diabetes_end_to_end to 2025-05-14 00:00:00+00:00, run_after=2025-05-15 00:00:00+00:00
+[2025-05-14T02:55:42.266+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/ml_pipeline.py took 1.147 seconds
