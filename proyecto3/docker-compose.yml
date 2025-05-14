@@ -1,15 +1,20 @@
-version: "3.9"
+############################################################
+#  MLOps Proyecto 3 – STACK COMPLETO                        #
+#  (Docker Compose v2 – sin clave “version:”)               #
+############################################################
 
 services:
-  # ---------------- Databases & Storage ----------------
+  # ---------------- Bases de datos & bucket ----------------
   postgres:
     image: postgres:16
     environment:
-      POSTGRES_USER: mlflow
-      POSTGRES_PASSWORD: mlflow
-      POSTGRES_DB: mlflow
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: mlflow           # BD para MLflow
     volumes:
       - pgdata:/var/lib/postgresql/data
+      # Script que crea usuario + DB ‘airflow’ la PRIMERA vez
+      - ./infra/init-airflow.sql:/docker-entrypoint-initdb.d/init-airflow.sql
     ports:
       - "5432:5432"
 
@@ -19,24 +24,22 @@ services:
     environment:
       MINIO_ROOT_USER: minio
       MINIO_ROOT_PASSWORD: minio123
+    volumes:
+      - minio_data:/data
     ports:
       - "9000:9000"
       - "9001:9001"
-    volumes:
-      - minio_data:/data
 
-  # ---------------- Core Services ----------------
+  # ---------------- MLflow Tracking & Model Registry -------
   mlflow:
     image: ghcr.io/mlflow/mlflow:v2.12.2
     environment:
-      BACKEND_STORE_URI: postgresql+psycopg2://mlflow:mlflow@postgres:5432/mlflow
+      BACKEND_STORE_URI: postgresql+psycopg2://postgres:postgres@postgres:5432/mlflow
       ARTIFACT_ROOT: s3://mlops-artifacts/
       MLFLOW_S3_ENDPOINT_URL: http://minio:9000
       AWS_ACCESS_KEY_ID: minio
       AWS_SECRET_ACCESS_KEY: minio123
-    depends_on:
-      - postgres
-      - minio
+    depends_on: [postgres, minio]
     command: >
       bash -c "mlflow server \
         --backend-store-uri=$${BACKEND_STORE_URI} \
@@ -45,26 +48,28 @@ services:
     ports:
       - "5000:5000"
 
+  # ---------------- Airflow (scheduler + webserver) --------
   airflow:
     image: apache/airflow:2.9.1
     environment:
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://mlflow:mlflow@postgres:5432/mlflow
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
       _PIP_ADDITIONAL_REQUIREMENTS: >
         mlflow psycopg2-binary pandas scikit-learn boto3 sqlalchemy requests
+    depends_on: [postgres]
     volumes:
       - ./dags:/opt/airflow/dags
       - data_volume:/data
-    depends_on: [postgres, mlflow]
-    ports:
-      - "8080:8080"
     command: >
       bash -c "
-        airflow db migrate &&
+        airflow db init &&
         airflow users create --username admin --password admin --firstname admin --lastname admin --role Admin --email admin@example.com &&
-        airflow webserver & airflow scheduler
+        airflow scheduler & exec airflow webserver
       "
+    ports:
+      - "8080:8080"
 
+  # ---------------- Worker de entrenamiento ----------------
   training-worker:
     build: ./training
     environment:
@@ -76,6 +81,7 @@ services:
       - data_volume:/data
     depends_on: [mlflow]
 
+  # ---------------- API FastAPI (inferencia) ---------------
   api:
     build: ./api
     environment:
@@ -87,6 +93,7 @@ services:
     ports:
       - "8000:8000"
 
+  # ---------------- UI Streamlit ---------------------------
   streamlit:
     build: ./streamlit_app
     environment:
@@ -95,13 +102,14 @@ services:
     ports:
       - "8501:8501"
 
+  # ---------------- Observabilidad -------------------------
   prometheus:
     image: prom/prometheus:v2.52.0
     volumes:
       - ./infra/prometheus.yml:/etc/prometheus/prometheus.yml
+    depends_on: [api]
     ports:
       - "9090:9090"
-    depends_on: [api]
 
   grafana:
     image: grafana/grafana:10.4.2
@@ -113,9 +121,9 @@ services:
     ports:
       - "3000:3000"
 
+# ---------------- Volúmenes persistentes ------------------
 volumes:
   pgdata:
   minio_data:
   grafana_data:
   data_volume:
-
