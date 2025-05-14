@@ -1,9 +1,0 @@
-fastapi
-uvicorn
-pandas
-mlflow
-scikit-learn
-prometheus-client
-boto3
-psycopg2-binary
-
