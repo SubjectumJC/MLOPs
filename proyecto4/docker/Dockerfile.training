@@ -13,6 +13,5 @@ RUN pip install --no-cache-dir poetry==1.8.2 && \
     pip check
 
 COPY services ./services
-COPY .env .
 
 CMD ["python", "services/training/run_training.py"]

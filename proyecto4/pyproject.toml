@@ -41,14 +41,14 @@ matplotlib        = "^3.8"
 altair            = "^5.5"
 
 [tool.poetry.group.dev.dependencies]
+pytest = "^8.2"
 black = "^24.4"
 isort = "^5.13"
-pytest = "^8.2"
 
-[[tool.poetry.source]]   # Ruedas oficiales Torch CPU
-name = "pytorch"
-url  = "https://download.pytorch.org/whl/cpu"
-default = false
+[[tool.poetry.source]]
+name     = "pytorch"
+url      = "https://download.pytorch.org/whl/cpu"
+priority = "secondary" 
 
 [build-system]
 requires = ["poetry-core>=1.8.0"]

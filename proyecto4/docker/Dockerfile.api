@@ -14,7 +14,6 @@ RUN pip install --no-cache-dir poetry==1.8.2 && \
     pip check
 
 COPY services ./services
-COPY .env .
 
 EXPOSE 8000
 CMD ["uvicorn", "services.fastapi_app.main:app", "--host", "0.0.0.0", "--port", "8000"]

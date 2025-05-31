@@ -13,7 +13,6 @@ RUN pip install --no-cache-dir poetry==1.8.2 && \
     pip check
 
 COPY services ./services
-COPY .env .
 
 EXPOSE 8501
 CMD ["streamlit", "run", "services/ui/dashboard.py", "--server.port=8501", "--server.address=0.0.0.0"]
