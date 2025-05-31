@@ -1,171 +1,165 @@
+# Proyecto 4 · MLOps (Grupo 4)
 
-# Proyecto Final MLOps 2025 – Grupo 4
+![arquitectura](docs/architecture.svg)
 
-![ci](https://github.com/<usuario>/proyecto4/actions/workflows/ci.yml/badge.svg)
-![license](https://img.shields.io/github/license/<usuario>/proyecto4)
-
-> **Última actualización**: 2025-05-31
-
-Este repositorio contiene la **implementación end‑to‑end** del sistema descrito en el documento “MLOPS_Proyecto_Final_2025.pdf”.  
-Incluye recolección de datos, entrenamiento de un autoencoder tabular con explicabilidad **SHAP**, API de inferencia y dashboard, todo orquestado con **Docker Compose** para desarrollo local y **Helm + Argo CD** para producción en Kubernetes.
+Sistema completo de MLOps para el *dataset de bienes raíces* entregado en el curso.  Orquesta la **recolección, procesamiento, entrenamiento, registro y despliegue** de modelos mediante contenedores, CI/CD y observabilidad.
 
 ---
 
 ## Tabla de contenidos
-1. [Arquitectura](#arquitectura)
+
+1. [Stack de servicios](#stack)
 2. [Requisitos](#requisitos)
-3. [Primeros pasos](#primeros-pasos)
-4. [Comandos make (opcional)](#comandos-make-opcional)
-5. [Estructura del repositorio](#estructura-del-repositorio)
-6. [Variables de entorno](#variables-de-entorno)
-7. [Pruebas](#pruebas)
-8. [Despliegue en Kubernetes](#despliegue-en-kubernetes)
-9. [CI/CD](#cicd)
+3. [Instalación rápida](#instalacion)
+4. [Variables de entorno](#env)
+5. [Flujo de datos](#flujo)
+6. [Uso diario](#uso)
+7. [CI / CD](#cicd)
+8. [Preguntas frecuentes](#faq)
 
 ---
 
-## Arquitectura
+<a id="stack"></a>
 
-```
-┌─────────────────────┐
-│   Docker Compose    │   ← desarrollo local
-└────────┬────────────┘
-         │
-         ▼
-┌──────────────┐   SHAP + métricas   ┌──────────────┐
-│  training    │ ───────────────►   │   MLflow UI   │
-└──────────────┘                    └──────────────┘
-    │                                    ▲
-    │ modelo Production                  │ artefactos (MinIO)
-    ▼                                    │
-┌──────────────┐        predicciones  ┌──────────────┐
-│    FastAPI   │ ───────────────────► │ Streamlit UI │
-└──────────────┘                     └──────────────┘
-```
+## 1 · Stack de servicios
 
-*En producción, los servicios se despliegan en K8s mediante Helm; Argo CD sincroniza el chart.*
+| Servicio              | Imagen / Dockerfile          | Puerto host | Descripción                                      |
+| --------------------- | ---------------------------- | ----------- | ------------------------------------------------ |
+| **Airflow**           | `apache/airflow:2.9.1`       | 8080        | Orquestador de *DAGs* de ingestión/entrenamiento |
+| **MLflow**            | `mlflow:2.22.0` *custom*     | 5000        | Tracking & Model Registry                        |
+| **MinIO**             | `quay.io/minio/minio:latest` | 9000/9001   | S3 compatible – artefactos de MLflow             |
+| **PostgreSQL (meta)** | `postgres:16-alpine`         | 5432        | Metadatos de MLflow                              |
+| **PostgreSQL raw**    | `postgres:16-alpine`         | 5433        | Datos crudos                                     |
+| **PostgreSQL clean**  | `postgres:16-alpine`         | 5434        | Datos limpios                                    |
+| **FastAPI**           | `proyecto4-api`              | 8000        | Infiere con el último modelo *Production*        |
+| **Streamlit**         | `proyecto4-ui`               | 8501        | UI para usuarios finales                         |
+| **Prometheus**        | `prom/prometheus`            | 9090        | Métricas                                         |
+| **Grafana**           | `grafana/grafana`            | 3000        | Dashboards                                       |
 
 ---
 
-## Requisitos
+<a id="requisitos"></a>
 
-| Herramienta | Versión mínima | Nota |
-|-------------|----------------|------|
-| **Docker** | 24 | Incluye Compose v2 |
-| **GNU Make** | opcional | Solo si quieres usar make; en Windows instala con Chocolatey `choco install make` |
-| **Python 3.11** | para ejecutar las pruebas | *(no necesario para usar Docker Compose)* |
+## 2 · Requisitos
+
+* Docker ≥ 24 y Docker Compose v2.
+* Windows 10/11, macOS o cualquier Linux.
+* Conexión a Internet para descargar imágenes.
 
 ---
 
-## Primeros pasos
+<a id="instalacion"></a>
+
+## 3 · Instalación rápida
 
 ```powershell
-git clone https://github.com/<usuario>/proyecto4.git
-cd proyecto4
+# clonar el repo
+> git clone https://github.com/<tu‑usuario>/proyecto4-mlops.git
+> cd proyecto4-mlops
 
-# 1) .env definitivo ya incluido; duplica si quieres un override local
-copy .env .env.local  # opcional
+# copiar variables de entorno (o editar)
+> copy .env.example .env  # Windows
+o
+$ cp .env.example .env    # Linux/macOS
 
-# 2) Levanta la pila
-docker compose up -d --build
-
-# 3) Entrena el primer modelo
-docker compose run --rm training
-
-# 4) Abre:
-start http://localhost:5000      # MLflow
-start http://localhost:8501      # Streamlit
-start http://localhost:8000/docs # FastAPI docs
+# levantar todo
+> docker compose pull      # descarga imágenes oficiales
+> docker compose build     # compila api / training / ui
+> docker compose up -d     # arranca los contenedores
 ```
 
-Para detener todo:
-
-```powershell
-docker compose down -v
-```
+*Airflow, MLflow y la API tardan \~1 minuto la primera vez.*
 
 ---
 
-## Comandos make (opcional)
+<a id="env"></a>
 
-| Comando | Acción |
-|---------|--------|
-| `make docker-up` | Levanta y compila la pila |
-| `make docker-down` | Detiene y limpia |
-| `make test` | Suite pytest |
-| `make lint` | Ruff |
-| `make typecheck` | Mypy |
+## 4 · Variables de entorno (`.env`)
 
-*(Requiere GNU Make).*
+| Clave                                          | Valor por defecto         | Explicación                          |
+| ---------------------------------------------- | ------------------------- | ------------------------------------ |
+| `GROUP_NUMBER`                                 | **4**                     | Tu número de grupo en la API externa |
+| `DATA_API_URL`                                 | `http://10.43.101.108:80` | Endpoint que devuelve un lote nuevo  |
+| `MLFLOW_S3_BUCKET`                             | `mlflow-artifacts`        | Bucket de artefactos                 |
+| `AWS_ACCESS_KEY_ID`<br>`AWS_SECRET_ACCESS_KEY` | `minioadmin`              | Credenciales de MinIO                |
+| `POSTGRES_*`                                   |  …                        | Usuarios/DBs de las tres instancias  |
+
+> **Tip:** cualquier cambio exige reiniciar el servicio afectado: `docker compose restart mlflow`.
 
 ---
 
-## Estructura del repositorio
+<a id="flujo"></a>
 
-```
-├── docker-compose.yml
-├── .env
-├── Makefile
-├── services/
-│   ├── training_pipeline/
-│   ├── fastapi_app/
-│   └── streamlit_ui/
-├── docker/
-│   ├── Dockerfile.training
-│   ├── Dockerfile.api
-│   └── Dockerfile.ui
-├── charts/mlops/
-├── infra/argo/
-├── airflow/dags/
-└── tests/
+## 5 · Flujo de datos & modelos
+
+```mermaid
+flowchart LR
+  subgraph Airflow
+    A[Ingest DAG]\n(API → RAW DB) --> B[Process DAG]\n(RAW → CLEAN)
+    B --> C[Train+Register]\n(CLEAN → MLflow + S3)
+  end
+  C -->|etiqueta Production| ML[MLflow]
+  ML --> API(FastAPI) --> UI(Streamlit)
+  API --> RAW_DB
 ```
 
----
-
-## Variables de entorno
-
-Las principales ya vienen definidas en `.env`; ejemplos:
-
-| Variable | Valor |
-|----------|-------|
-| `MLFLOW_TRACKING_URI` | http://mlflow:5000 |
-| `MLFLOW_S3_ENDPOINT_URL` | http://minio:9000 |
-| `DATA_API_URL` | http://10.43.101.108:80 |
+1. **Ingest DAG** consume la API externa y guarda JSON en `postgres-raw`.
+2. **Process DAG** limpia, codifica, y normaliza hacia `postgres-clean`.
+3. **Train DAG** entrena, loguea métricas y sube el modelo a MLflow.
+4. Al marcar un modelo como *Production*, FastAPI lo sirve sin redeploy.
+5. Cada llamada a `/predict` se loguea como dato nuevo (retro‑alimentación).
 
 ---
 
-## Pruebas
+<a id="uso"></a>
 
-```powershell
-poetry install --with dev
-make test
+## 6 · Uso diario
+
+| Acción                 | Cómo hacerlo                                                   |
+| ---------------------- | -------------------------------------------------------------- |
+| **Ver Airflow**        | [http://localhost:8080](http://localhost:8080) (admin / admin) |
+| **Disparar ingestión** | Trigger del DAG **`ingest_dataset`**                           |
+| **Ver experimentos**   | [http://localhost:5000](http://localhost:5000)                 |
+| **Actualizar modelo**  | En MLflow → “Promote to Production”                            |
+| **Probar API**         | [http://localhost:8000/docs](http://localhost:8000/docs)       |
+| **UI final**           | [http://localhost:8501](http://localhost:8501)                 |
+| **Grafana**            | [http://localhost:3000](http://localhost:3000) (admin / admin) |
+
+Automatiza el ciclo programando el DAG `ingest_dataset` cada hora:
+
+```python
+schedule_interval="0 * * * *"  # cron
 ```
 
 ---
 
-## Despliegue en Kubernetes
+<a id="cicd"></a>
+
+## 7 · CI / CD (GitHub Actions + DockerHub + Argo CD)
+
+* **`.github/workflows/push.yml`**: Compila las imágenes (`api`, `training`, `ui`) y las publica en DockerHub.
+* **`.github/workflows/test.yml`**: Ejecuta `pytest` y `ruff`.
+* **Argo CD** (k8s/ folder): manifiestos Helm que sincronizan deploys en un cluster.
+
+Para probar el workflow localmente:
 
 ```bash
-helm upgrade --install mlops charts/mlops -n mlops --create-namespace
-kubectl apply -f infra/argo/mlops-app.yaml   # Argo CD (opcional)
+act push -j build-and-publish
 ```
 
 ---
 
-## CI/CD
+<a id="faq"></a>
 
-El workflow `.github/workflows/ci.yml`:
+## 8 · FAQ / Troubleshooting
 
-1. Ejecuta pruebas.
-2. Construye y publica imágenes `training`, `api`, `ui`.
-3. Argo CD actualiza el cluster.
-
-Asegura los secrets en GitHub:
-
-```
-DOCKERHUB_USERNAME
-DOCKERHUB_TOKEN
-```
+| Problema                                | Solución                                                                                  |
+| --------------------------------------- | ----------------------------------------------------------------------------------------- |
+| **`/.env: not found` en build**         | Asegúrate de tener `.env` en la raíz o elimina la línea `COPY .env .` de Dockerfiles.     |
+| **MLflow no arranca**                   | Puerto 5000 ocupado → edita `docker-compose.yml` y cambia `5001:5000`.                    |
+| **Airflow muestra "permission denied"** | Borra volumenes `airflow-*` y reinicia: `docker compose down -v && docker compose up -d`. |
+| **La API externa devuelve error 429**   | Demasiadas peticiones; espera 1‑2 min y re‑ejecuta.                                       |
 
 ---
 
+© 2025 · Pontificia Universidad Javeriana – MLOps · Grupo 4
