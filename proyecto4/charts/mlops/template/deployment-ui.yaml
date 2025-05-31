@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "mlops.fullname" . }}-ui
+spec:
+  replicas: {{ .Values.ui.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "mlops.fullname" . }}-ui
+  template:
+    metadata:
+      labels:
+        app: {{ include "mlops.fullname" . }}-ui
+    spec:
+      containers:
+        - name: ui
+          image: "{{ .Values.ui.image.repository }}:{{ .Values.ui.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: mlops-env
+          ports:
+            - containerPort: 8501

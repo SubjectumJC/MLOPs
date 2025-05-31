@@ -1,0 +1,12 @@
+"""
+Training-Pipeline package for Proyecto Final MLOps 2025.
+
+Al importar `training_pipeline`, deja disponibles:
+    • __version__  – Versión semántica del microservicio
+"""
+from importlib.metadata import version, PackageNotFoundError
+
+try:
+    __version__: str = version(__name__)          
+except PackageNotFoundError:                  
+    __version__ = "0.1.0"

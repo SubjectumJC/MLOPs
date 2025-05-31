@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "mlops.fullname" . }}-train
+spec:
+  schedule: "{{ .Values.training.schedule }}"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: train
+              image: "{{ .Values.training.image.repository }}:{{ .Values.training.image.tag }}"
+              imagePullPolicy: IfNotPresent
+              command: ["python", "-m", "services.training_pipeline.cli", "run"]
+              envFrom:
+                - configMapRef:
+                    name: mlops-env

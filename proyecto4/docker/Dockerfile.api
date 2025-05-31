@@ -1,0 +1,20 @@
+# ───────── FastAPI ─────────
+FROM python:3.11-slim
+
+ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
+
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential gcc git \
+ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY pyproject.toml poetry.lock* ./
+RUN pip install --no-cache-dir poetry==1.8.2 && \
+    poetry config virtualenvs.create false && \
+    poetry install --only main --no-root --no-interaction --no-ansi && \
+    pip check
+
+COPY services ./services
+COPY .env .
+
+EXPOSE 8000
+CMD ["uvicorn", "services.fastapi_app.main:app", "--host", "0.0.0.0", "--port", "8000"]

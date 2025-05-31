@@ -1,0 +1,26 @@
+global:
+  imagePullSecret: ""
+
+api:
+  replicaCount: 2
+  image:
+    repository: inference_api
+    tag: latest
+  service:
+    type: ClusterIP
+    port: 80
+
+ui:
+  replicaCount: 1
+  image:
+    repository: streamlit_ui
+    tag: latest
+  service:
+    type: ClusterIP
+    port: 8501
+
+training:
+  schedule: "0 2 * * *"
+  image:
+    repository: training_pipeline
+    tag: latest

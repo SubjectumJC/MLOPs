@@ -1,0 +1,14 @@
+# ───────────── Archivos ignorados por Docker ─────────────
+.git
+.github/
+docs/
+tests/
+*.md
+*.pdf
+*/__pycache__/
+*.py[cod]
+*~
+# Entornos virtuales
+.venv/
+.env*
+data/

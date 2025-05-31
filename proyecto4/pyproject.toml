@@ -1,0 +1,55 @@
+[tool.poetry]
+name = "mlops-proyecto-final-2025"
+version = "0.1.0"
+description = "ETL → limpieza → entrenamiento → API → dashboard con tracking"
+authors = ["Tu Nombre <tu@email.com>"]
+packages = [{ include = "services" }]
+
+[tool.poetry.dependencies]
+python            = "^3.11"
+
+# API & utils
+fastapi           = "^0.111"
+uvicorn           = "^0.29"
+pydantic          = "^2.6"
+python-dotenv     = "^1.0"
+sqlalchemy        = "^2.0"
+psycopg2-binary   = "^2.9"
+
+# Ciencia de datos
+pandas            = "^2.2"
+numpy             = "^1.26"
+scikit-learn      = "^1.6"
+xgboost           = "^2.0"
+shap              = "^0.45"
+
+# Deep Learning CPU
+torch             = {version = "2.3.1+cpu", source = "pytorch"}
+torchvision       = {version = "0.18.1+cpu", source = "pytorch"}
+torchdata         = "0.11.0"
+torchmetrics      = "^1.7"
+pytorch-lightning = "^2.5"
+
+# Tracking / storage
+mlflow            = "^2.22"
+boto3             = "^1.38"
+minio             = "^7.2"
+
+# Dashboard
+streamlit         = "^1.45"
+matplotlib        = "^3.8"
+altair            = "^5.5"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.4"
+isort = "^5.13"
+pytest = "^8.2"
+
+[[tool.poetry.source]]   # Ruedas oficiales Torch CPU
+name = "pytorch"
+url  = "https://download.pytorch.org/whl/cpu"
+default = false
+
+[build-system]
+requires = ["poetry-core>=1.8.0"]
+build-backend = "poetry.core.masonry.api"

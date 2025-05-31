@@ -1,0 +1,96 @@
+version: "3.9"
+
+volumes:
+  postgres_raw_data:
+  postgres_clean_data:
+  mlflow_artifacts:
+  minio_data:
+
+services:
+  # Bases de datos
+  postgres-raw:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB_RAW}
+    volumes:
+      - postgres_raw_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  postgres-clean:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB_CLEAN}
+    volumes:
+      - postgres_clean_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+  # MLflow Tracking Server
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:2.12.0
+    environment:
+      MLFLOW_BACKEND_STORE_URI: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres-clean:5432/${POSTGRES_DB_CLEAN}
+      MLFLOW_ARTIFACT_ROOT: s3://mlflow/
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}
+    depends_on:
+      - postgres-clean
+      - minio
+    command: mlflow server --workers 4 --host 0.0.0.0
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlflow_artifacts:/mlflow
+
+  # MinIO (S3 local)
+  minio:
+    image: minio/minio:RELEASE.2024-05-10T18-46-28Z
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${AWS_ACCESS_KEY_ID}
+      MINIO_ROOT_PASSWORD: ${AWS_SECRET_ACCESS_KEY}
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+  # API de predicción
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    env_file: .env
+    depends_on:
+      - postgres-clean
+      - mlflow
+    ports:
+      - "8000:8000"
+
+  # Job de entrenamiento / ETL
+  training:
+    build:
+      context: .
+      dockerfile: Dockerfile.training
+    env_file: .env
+    depends_on:
+      - postgres-clean
+      - mlflow
+
+  # Dashboard Streamlit
+  ui:
+    build:
+      context: .
+      dockerfile: Dockerfile.ui
+    env_file: .env
+    depends_on:
+      - api
+      - mlflow
+    ports:
+      - "8501:8501"
